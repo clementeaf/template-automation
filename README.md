@@ -1,158 +1,86 @@
-# 🚀 Next.js Modern Starter Template
+# Sistema de Templates para Automatización de Proyectos
 
-Esta es una plantilla moderna y flexible para aplicaciones web, diseñada para servir como punto de partida para prácticamente cualquier proyecto que necesites construir.
+Este repositorio contiene plantillas de proyectos mínimos funcionales y herramientas para la automatización en la creación y gestión de proyectos de desarrollo. El objetivo es proporcionar un punto de partida rápido para diferentes tipos de proyectos, evitando la configuración repetitiva.
 
-## ✨ Características
+## Estructura del Repositorio
 
-- ⚡ **Next.js 15**: Framework React moderno con renderizado híbrido
-- 🎨 **TailwindCSS 4**: Sistema de diseño utilitario para desarrollo rápido
-- 🔄 **TanStack React Query**: Gestión eficiente de estado del servidor
-- 🌓 **Sistema de Temas Claro/Oscuro**: Implementación completa con persistencia
-- 📱 **Diseño Responsivo**: Adaptable a cualquier dispositivo
-- 🔍 **SEO Optimizado**: Estructurado para mejor indexación
-- 🛠️ **TypeScript**: Tipado estático para código más seguro
-- 📏 **ESLint & Prettier**: Calidad y consistencia de código
-- 🔧 **Scripts Útiles**: Automatización para tareas comunes
+### Scripts y Herramientas
 
-## 📋 Requisitos Previos
+- **create-repo.sh**: Script para crear automáticamente un repositorio en GitHub llamado "template-automation" utilizando la API de GitHub.
+- **scripts/**: Carpeta que contiene scripts útiles para la generación de código:
+  - **create-component.js**: Genera componentes React/Next.js con estructura predefinida.
+  - **create-page.js**: Genera páginas para aplicaciones Next.js con estructura predefinida.
+- **.env**: Archivo de configuración para variables de entorno (contiene el token de GitHub).
+- **.env.example**: Plantilla de ejemplo para el archivo .env.
 
-- Node.js 18.0.0 o superior
-- npm o yarn
-- Conocimientos básicos de React y Next.js
+### Templates de Proyectos (Por implementar)
 
-## 🚦 Inicio Rápido
+Este repositorio incluirá templates de proyectos mínimos configurados y listos para usar. Por ejemplo:
+
+- **frontend-nextjs/**: Proyecto mínimo de Next.js configurado con:
+  - TypeScript
+  - ESLint y Prettier
+  - TailwindCSS
+  - Estructura de carpetas optimizada
+  - Componentes básicos reutilizables
+
+- **backend-nodets/**: Proyecto mínimo de Node.js con TypeScript:
+  - Estructura de API RESTful
+  - Configuración de TypeScript optimizada
+  - ESLint y Prettier
+  - Sistema de logging y manejo de errores
+
+## Uso del Repositorio
+
+### Crear un Nuevo Repositorio en GitHub
+
+Para crear un nuevo repositorio en GitHub utilizando el script proporcionado:
 
 ```bash
-# Clonar el repositorio
-git clone https://github.com/clementeaf/template-automation.git mi-proyecto
+# Asegúrate de tener un archivo .env con tu token de GitHub
+echo "GITHUB_TOKEN=tu_token_de_github" > .env
 
-# Navegar al directorio
-cd mi-proyecto
-
-# Instalar dependencias
-npm install
-# o
-yarn install
-
-# Iniciar servidor de desarrollo
-npm run dev
-# o
-yarn dev
+# Ejecuta el script para crear el repositorio
+./create-repo.sh
 ```
 
-Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver el resultado.
+El script verificará que todas las dependencias estén instaladas, creará el repositorio en GitHub y te dará la opción de clonarlo inmediatamente.
 
-## 📁 Estructura de Carpetas
+### Utilizar un Template de Proyecto
 
-```
-src/
-├── app/                    # App Router de Next.js
-│   ├── api/                # Rutas de API
-│   ├── (routes)/           # Rutas de la aplicación
-│   ├── layout.tsx          # Layout principal
-│   └── page.tsx            # Página de inicio
-├── components/             # Componentes reutilizables
-│   ├── forms/              # Componentes de formularios
-│   └── ui/                 # Componentes de interfaz de usuario
-├── lib/                    # Bibliotecas y utilidades
-│   └── providers/          # Proveedores de contexto
-└── styles/                 # Estilos globales
+Cuando estén implementados los templates, podrás iniciar un nuevo proyecto copiando la carpeta correspondiente:
+
+```bash
+# Próximamente: script para copiar un template y configurarlo automáticamente
+# Por ejemplo:
+# ./iniciar-proyecto.sh frontend-nextjs mi-nuevo-proyecto
 ```
 
-## 🛠️ Scripts Disponibles
+### Generar Componentes y Páginas
 
-| Comando | Descripción |
-|---------|-------------|
-| `npm run dev` | Inicia el servidor de desarrollo |
-| `npm run build` | Construye la aplicación para producción |
-| `npm run start` | Inicia la aplicación en modo producción |
-| `npm run lint` | Ejecuta ESLint para revisar el código |
-| `npm run format` | Formatea el código con Prettier |
-| `npm run create:component` | Crea un nuevo componente con código boilerplate |
-| `npm run create:page` | Crea una nueva página con código boilerplate |
+Los scripts de generación pueden utilizarse para crear rápidamente componentes y páginas con una estructura estandarizada:
 
-## 🎨 Personalización
+```bash
+# Para crear un componente
+node scripts/create-component.js
 
-### Sistema de Temas
-
-El sistema de temas utiliza variables CSS y clases para mantener consistencia en toda la aplicación:
-
-```css
-/* Personaliza colores del tema claro */
-:root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 47.4% 11.2%;
-  /* ... */
-}
-
-/* Personaliza colores del tema oscuro */
-.dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  /* ... */
-}
+# Para crear una página
+node scripts/create-page.js
 ```
 
-### Tailwind
+Estos scripts te guiarán a través de un proceso interactivo para especificar el nombre y tipo de componente o página que deseas crear.
 
-Modifica `tailwind.config.js` para personalizar:
-- Colores
-- Tipografía
-- Espaciado
-- Breakpoints responsivos
-- Plugins
+## Requisitos
 
-## 🔄 Adaptación a Diferentes Proyectos
+- Node.js instalado en el sistema
+- Git instalado en el sistema
+- Token de GitHub con permisos para crear repositorios
+- Archivo .env configurado con el token de GitHub
 
-Esta plantilla es altamente adaptable para diferentes tipos de proyectos:
+## Contribuciones
 
-### Para una Landing Page
+Las contribuciones son bienvenidas. Si deseas mejorar los scripts existentes, añadir nuevos templates de proyectos o añadir nuevas funcionalidades, no dudes en crear un pull request.
 
-1. Enfócate en la página principal (`src/app/page.tsx`)
-2. Utiliza el sistema de componentes UI para crear secciones atractivas
-3. Optimiza las metadatos para SEO
+## Licencia
 
-### Para un Dashboard Administrativo
-
-1. Crea rutas protegidas en `src/app/(protected)/`
-2. Añade sistema de autenticación (NextAuth.js se integra fácilmente)
-3. Utiliza React Query para gestionar datos del servidor
-4. Crea componentes de tabla, gráficos, etc.
-
-### Para un E-commerce
-
-1. Configura rutas para categorías y productos
-2. Implementa carrito de compras con Context API o Zustand
-3. Integra sistema de pagos
-4. Gestiona estado de productos con React Query
-
-## ❓ Resolución de Problemas
-
-### Errores Comunes
-
-| Problema | Solución |
-|----------|----------|
-| Errores de TypeScript | Ejecuta `npm install` para asegurar que todos los tipos estén instalados |
-| Errores de hidratación | Asegúrate de usar correctamente los componentes del lado del cliente con `'use client'` |
-| Errores de estilo | Verifica que tu configuración de Tailwind esté correctamente instalada |
-| Rutas no encontradas | Comprueba la estructura de carpetas en `/app` siga las convenciones de Next.js |
-
-Para más ayuda, consulta la [documentación oficial de Next.js](https://nextjs.org/docs).
-
-## 🧩 Extensión
-
-Para añadir más características a tu proyecto:
-
-- **Autenticación**: Integra NextAuth.js
-- **Estado Global**: Añade Zustand o Redux
-- **Animaciones**: Incorpora Framer Motion
-- **Formularios**: Añade React Hook Form + Zod
-- **UI Components**: Integra Shadcn UI o Radix UI
-
-## 📃 Licencia
-
-MIT
-
----
-
-¿Encontraste útil esta plantilla? Dale una ⭐ en GitHub y compártela con otros desarrolladores!
+Este proyecto está licenciado bajo los términos de la licencia MIT. 

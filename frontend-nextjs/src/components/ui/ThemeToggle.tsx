@@ -1,15 +1,47 @@
 'use client';
 
-import React from 'react';
-import { useTheme } from '@/lib/providers/theme-provider';
+import React, { useState, useEffect } from 'react';
 
 export default function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme();
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [mounted, setMounted] = useState(false);
+
+  // Efecto para inicializar el tema
+  useEffect(() => {
+    // Solo ejecuta código del lado del cliente
+    const storedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // Prioriza el tema guardado o usa la preferencia del sistema
+    const initialTheme = storedTheme || (prefersDark ? 'dark' : 'light');
+    setTheme(initialTheme);
+    setMounted(true);
+  }, []);
+
+  // Efecto para aplicar el tema en el documento
+  useEffect(() => {
+    if (mounted) {
+      const root = window.document.documentElement;
+      root.classList.remove('light', 'dark');
+      root.classList.add(theme);
+      localStorage.setItem('theme', theme);
+    }
+  }, [theme, mounted]);
+
+  // Función para alternar entre temas
+  const toggleTheme = () => {
+    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+  };
+
+  // No renderiza nada durante SSR para evitar hidratación incorrecta
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <button
       onClick={toggleTheme}
-      className="rounded-md p-2 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary"
+      className="rounded-md p-2 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
       aria-label={theme === 'light' ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'}
     >
       {theme === 'light' ? (

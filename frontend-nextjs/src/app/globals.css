@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f4f6;
+  --secondary-foreground: #171717;
+  --accent: #f3f4f6;
+  --accent-foreground: #171717;
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --card: #111111;
+  --card-foreground: #ededed;
+  --muted: #1f2937;
+  --muted-foreground: #9ca3af;
+  --primary: #2563eb;
+  --primary-foreground: #ededed;
+  --secondary: #1f2937;
+  --secondary-foreground: #ededed;
+  --accent: #1f2937;
+  --accent-foreground: #ededed;
+  --border: #374151;
+  --input: #374151;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-sans, Arial, Helvetica, sans-serif);
+}
+
+@layer base {
+  * {
+    @apply border-[var(--border)];
+  }
+  body {
+    @apply bg-[var(--background)] text-[var(--foreground)];
+  }
+}
