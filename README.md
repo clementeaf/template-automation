@@ -38,6 +38,17 @@ Este repositorio incluye los siguientes templates de proyectos, listos para usar
   - IAM optimizado con permisos de mínimo privilegio
   - Scripts para desarrollo local y despliegue
 
+- **frontend-rn/**: Proyecto de React Native con Expo:
+  - TypeScript para tipado estático
+  - Estructura de carpetas optimizada
+  - Componentes comunes reutilizables (Button, Input)
+  - Sistema de temas claro/oscuro
+  - Configuración inicial para React Navigation
+  - Soporte para iconos vectoriales
+  - Gestión de formularios
+  - Configuración para almacenamiento seguro
+  - Scripts para desarrollo y testing
+
 ## Uso del Repositorio
 
 ### Crear un Nuevo Repositorio en GitHub
@@ -63,6 +74,8 @@ Para iniciar un nuevo proyecto basado en uno de los templates disponibles:
 cp -r frontend-nextjs/ mi-proyecto-frontend
 # o
 cp -r backend-node/ mi-proyecto-backend
+# o
+cp -r frontend-rn/ mi-app-movil
 
 # Entra al directorio del proyecto e instala las dependencias
 cd mi-proyecto-frontend
@@ -96,6 +109,19 @@ npm run dev
 npm run deploy
 ```
 
+### React Native con Expo
+
+El template frontend-rn proporciona una aplicación React Native con Expo lista para usar:
+
+```bash
+# Iniciar la aplicación
+cd frontend-rn
+npm install
+npx expo start
+```
+
+Escanea el código QR con la app Expo Go en tu dispositivo o presiona 'a' para Android o 'i' para iOS.
+
 Consulta el README específico de cada template para obtener instrucciones detalladas.
 
 ### Generar Componentes y Páginas
@@ -119,6 +145,7 @@ Estos scripts te guiarán a través de un proceso interactivo para especificar e
 - Token de GitHub con permisos para crear repositorios (para create-repo.sh)
 - AWS CLI configurado (para backend-node)
 - Serverless Framework (opcional, para backend-node)
+- Expo CLI y/o Expo Go (para frontend-rn)
 
 ## Contribuciones
 
@@ -128,9 +155,9 @@ Las contribuciones son bienvenidas. Si deseas mejorar los scripts existentes, a�
 
 Próximas plantillas a implementar:
 
-- Template de aplicación móvil con React Native
 - Template para microservicios con NestJS
 - Template para aplicaciones con MongoDB y Express
+- Template para aplicaciones de escritorio con Electron
 
 ## Licencia
 
