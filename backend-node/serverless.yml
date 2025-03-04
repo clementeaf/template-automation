@@ -50,21 +50,19 @@ provider:
           Resource: "*"
 
 plugins:
-  - serverless-plugin-typescript
   - serverless-offline
 
 package:
-  individually: true
-  exclude:
-    - node_modules/**
-    - src/**
-  include:
-    - dist/**
+  individually: false
+  patterns:
+    - '!src/**'
+    - 'node_modules/**'
+    - 'dist/**'
 
 functions:
   # API para S3
   uploadFile:
-    handler: src/handlers/s3-handlers.uploadFile
+    handler: dist/handlers/s3-handlers.uploadFile
     events:
       - http:
           path: /upload
@@ -72,7 +70,7 @@ functions:
           cors: true
   
   getFile:
-    handler: src/handlers/s3-handlers.getFile
+    handler: dist/handlers/s3-handlers.getFile
     events:
       - http:
           path: /files/{fileId}
@@ -81,7 +79,7 @@ functions:
   
   # API para DynamoDB
   createItem:
-    handler: src/handlers/dynamodb-handlers.createItem
+    handler: dist/handlers/dynamodb-handlers.createItem
     events:
       - http:
           path: /items
@@ -89,7 +87,7 @@ functions:
           cors: true
   
   getItem:
-    handler: src/handlers/dynamodb-handlers.getItem
+    handler: dist/handlers/dynamodb-handlers.getItem
     events:
       - http:
           path: /items/{id}
@@ -97,7 +95,7 @@ functions:
           cors: true
   
   scanItems:
-    handler: src/handlers/dynamodb-handlers.scanItems
+    handler: dist/handlers/dynamodb-handlers.scanItems
     events:
       - http:
           path: /items
@@ -105,7 +103,7 @@ functions:
           cors: true
   
   updateItem:
-    handler: src/handlers/dynamodb-handlers.updateItem
+    handler: dist/handlers/dynamodb-handlers.updateItem
     events:
       - http:
           path: /items/{id}
@@ -113,7 +111,7 @@ functions:
           cors: true
   
   deleteItem:
-    handler: src/handlers/dynamodb-handlers.deleteItem
+    handler: dist/handlers/dynamodb-handlers.deleteItem
     events:
       - http:
           path: /items/{id}
@@ -122,7 +120,7 @@ functions:
   
   # API para envío de emails
   sendEmail:
-    handler: src/handlers/email-handlers.sendEmail
+    handler: dist/handlers/email-handlers.sendEmail
     events:
       - http:
           path: /email

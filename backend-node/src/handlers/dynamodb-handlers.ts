@@ -1,8 +1,21 @@
-import { DynamoDB } from 'aws-sdk';
+import { 
+  DynamoDBClient, 
+  GetItemCommand, 
+  PutItemCommand, 
+  ScanCommand, 
+  UpdateItemCommand, 
+  DeleteItemCommand,
+  AttributeValue,
+  ReturnValue
+} from '@aws-sdk/client-dynamodb';
+import { 
+  DynamoDBDocumentClient
+} from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
 
-const dynamoDb = new DynamoDB.DocumentClient();
+const client = new DynamoDBClient({});
+const dynamoDb = DynamoDBDocumentClient.from(client);
 const TABLE_NAME = process.env.DYNAMODB_TABLE || 'items-table';
 
 /**
@@ -25,19 +38,30 @@ export const createItem = async (event: APIGatewayProxyEvent): Promise<APIGatewa
     const params = {
       TableName: TABLE_NAME,
       Item: {
-        id,
-        ...data,
-        createdAt: timestamp,
-        updatedAt: timestamp
+        id: { S: id },
+        ...Object.entries(data).reduce((acc, [key, value]) => {
+          acc[key] = convertToAttributeValue(value);
+          return acc;
+        }, {} as Record<string, AttributeValue>),
+        createdAt: { S: timestamp },
+        updatedAt: { S: timestamp }
       }
     };
 
-    await dynamoDb.put(params).promise();
+    await dynamoDb.send(new PutItemCommand(params));
+
+    // Convertimos de vuelta los AttributeValues a objetos normales para la respuesta
+    const responseItem = {
+      id,
+      ...data,
+      createdAt: timestamp,
+      updatedAt: timestamp
+    };
 
     return {
       statusCode: 201,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params.Item)
+      body: JSON.stringify(responseItem)
     };
   } catch (error) {
     console.error('Error al crear ítem en DynamoDB:', error);
@@ -48,6 +72,57 @@ export const createItem = async (event: APIGatewayProxyEvent): Promise<APIGatewa
     };
   }
 };
+
+/**
+ * Convierte un valor JavaScript a un AttributeValue de DynamoDB
+ */
+function convertToAttributeValue(value: any): AttributeValue {
+  if (typeof value === 'string') return { S: value };
+  if (typeof value === 'number') return { N: value.toString() };
+  if (typeof value === 'boolean') return { BOOL: value };
+  if (value === null || value === undefined) return { NULL: true };
+  if (Array.isArray(value)) {
+    if (value.length === 0) return { L: [] };
+    
+    // Determinar el tipo basado en el primer elemento
+    if (typeof value[0] === 'string') return { SS: value };
+    if (typeof value[0] === 'number') return { NS: value.map(n => n.toString()) };
+    
+    // Para arrays mixtos, convertimos cada elemento
+    return { L: value.map(item => convertToAttributeValue(item)) };
+  }
+  if (typeof value === 'object') {
+    const mapEntries = Object.entries(value).reduce((acc, [k, v]) => {
+      acc[k] = convertToAttributeValue(v);
+      return acc;
+    }, {} as Record<string, AttributeValue>);
+    return { M: mapEntries };
+  }
+  
+  // Valor desconocido, convertimos a string como fallback
+  return { S: String(value) };
+}
+
+/**
+ * Convierte un objeto AttributeValue de DynamoDB a un valor JavaScript
+ */
+function convertFromAttributeValue(attributeValue: AttributeValue): any {
+  if (attributeValue.S !== undefined) return attributeValue.S;
+  if (attributeValue.N !== undefined) return Number(attributeValue.N);
+  if (attributeValue.BOOL !== undefined) return attributeValue.BOOL;
+  if (attributeValue.NULL !== undefined) return null;
+  if (attributeValue.SS !== undefined) return attributeValue.SS;
+  if (attributeValue.NS !== undefined) return attributeValue.NS.map(n => Number(n));
+  if (attributeValue.L !== undefined) return attributeValue.L.map(item => convertFromAttributeValue(item));
+  if (attributeValue.M !== undefined) {
+    return Object.entries(attributeValue.M).reduce((acc, [k, v]) => {
+      acc[k] = convertFromAttributeValue(v);
+      return acc;
+    }, {} as Record<string, any>);
+  }
+  
+  return null;
+}
 
 /**
  * Obtiene un ítem específico de DynamoDB
@@ -66,10 +141,12 @@ export const getItem = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
     const params = {
       TableName: TABLE_NAME,
-      Key: { id }
+      Key: {
+        id: { S: id }
+      }
     };
 
-    const result = await dynamoDb.get(params).promise();
+    const result = await dynamoDb.send(new GetItemCommand(params));
 
     if (!result.Item) {
       return {
@@ -79,10 +156,16 @@ export const getItem = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       };
     }
 
+    // Convertir los AttributeValues a un objeto normal
+    const item = Object.entries(result.Item).reduce((acc, [key, value]) => {
+      acc[key] = convertFromAttributeValue(value);
+      return acc;
+    }, {} as Record<string, any>);
+
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(result.Item)
+      body: JSON.stringify(item)
     };
   } catch (error) {
     console.error('Error al obtener ítem de DynamoDB:', error);
@@ -103,12 +186,20 @@ export const scanItems = async (event: APIGatewayProxyEvent): Promise<APIGateway
       TableName: TABLE_NAME
     };
 
-    const result = await dynamoDb.scan(params).promise();
+    const result = await dynamoDb.send(new ScanCommand(params));
+
+    // Convertir los AttributeValues a objetos normales
+    const items = result.Items ? result.Items.map(item => {
+      return Object.entries(item).reduce((acc, [key, value]) => {
+        acc[key] = convertFromAttributeValue(value);
+        return acc;
+      }, {} as Record<string, any>);
+    }) : [];
 
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(result.Items)
+      body: JSON.stringify(items)
     };
   } catch (error) {
     console.error('Error al escanear ítems de DynamoDB:', error);
@@ -149,10 +240,12 @@ export const updateItem = async (event: APIGatewayProxyEvent): Promise<APIGatewa
     // Verificamos que el ítem existe
     const getParams = {
       TableName: TABLE_NAME,
-      Key: { id }
+      Key: {
+        id: { S: id }
+      }
     };
 
-    const getResult = await dynamoDb.get(getParams).promise();
+    const getResult = await dynamoDb.send(new GetItemCommand(getParams));
 
     if (!getResult.Item) {
       return {
@@ -165,12 +258,12 @@ export const updateItem = async (event: APIGatewayProxyEvent): Promise<APIGatewa
     // Construimos la expresión de actualización dinámicamente
     const updateExpressionParts: string[] = [];
     const expressionAttributeNames: Record<string, string> = {};
-    const expressionAttributeValues: Record<string, any> = {};
+    const expressionAttributeValues: Record<string, AttributeValue> = {};
 
     // Siempre actualizamos la fecha de modificación
     updateExpressionParts.push('#updatedAt = :updatedAt');
     expressionAttributeNames['#updatedAt'] = 'updatedAt';
-    expressionAttributeValues[':updatedAt'] = timestamp;
+    expressionAttributeValues[':updatedAt'] = { S: timestamp };
 
     // Añadimos cada campo a actualizar
     Object.keys(data).forEach(key => {
@@ -180,7 +273,7 @@ export const updateItem = async (event: APIGatewayProxyEvent): Promise<APIGatewa
         
         updateExpressionParts.push(`${attrName} = ${attrValue}`);
         expressionAttributeNames[attrName] = key;
-        expressionAttributeValues[attrValue] = data[key];
+        expressionAttributeValues[attrValue] = convertToAttributeValue(data[key]);
       }
     });
 
@@ -188,19 +281,27 @@ export const updateItem = async (event: APIGatewayProxyEvent): Promise<APIGatewa
 
     const updateParams = {
       TableName: TABLE_NAME,
-      Key: { id },
+      Key: {
+        id: { S: id }
+      },
       UpdateExpression: updateExpression,
       ExpressionAttributeNames: expressionAttributeNames,
       ExpressionAttributeValues: expressionAttributeValues,
-      ReturnValues: 'ALL_NEW'
+      ReturnValues: 'ALL_NEW' as ReturnValue
     };
 
-    const result = await dynamoDb.update(updateParams).promise();
+    const result = await dynamoDb.send(new UpdateItemCommand(updateParams));
+
+    // Convertir los AttributeValues a un objeto normal
+    const updatedItem = result.Attributes ? Object.entries(result.Attributes).reduce((acc, [key, value]) => {
+      acc[key] = convertFromAttributeValue(value);
+      return acc;
+    }, {} as Record<string, any>) : {};
 
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(result.Attributes)
+      body: JSON.stringify(updatedItem)
     };
   } catch (error) {
     console.error('Error al actualizar ítem en DynamoDB:', error);
@@ -230,10 +331,12 @@ export const deleteItem = async (event: APIGatewayProxyEvent): Promise<APIGatewa
     // Verificamos que el ítem existe
     const getParams = {
       TableName: TABLE_NAME,
-      Key: { id }
+      Key: {
+        id: { S: id }
+      }
     };
 
-    const getResult = await dynamoDb.get(getParams).promise();
+    const getResult = await dynamoDb.send(new GetItemCommand(getParams));
 
     if (!getResult.Item) {
       return {
@@ -245,19 +348,24 @@ export const deleteItem = async (event: APIGatewayProxyEvent): Promise<APIGatewa
 
     const deleteParams = {
       TableName: TABLE_NAME,
-      Key: { id },
-      ReturnValues: 'ALL_OLD'
+      Key: {
+        id: { S: id }
+      },
+      ReturnValues: 'ALL_OLD' as ReturnValue
     };
 
-    const result = await dynamoDb.delete(deleteParams).promise();
+    const result = await dynamoDb.send(new DeleteItemCommand(deleteParams));
+
+    // Convertir los AttributeValues a un objeto normal
+    const deletedItem = result.Attributes ? Object.entries(result.Attributes).reduce((acc, [key, value]) => {
+      acc[key] = convertFromAttributeValue(value);
+      return acc;
+    }, {} as Record<string, any>) : {};
 
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        message: 'Ítem eliminado correctamente',
-        deletedItem: result.Attributes
-      })
+      body: JSON.stringify(deletedItem)
     };
   } catch (error) {
     console.error('Error al eliminar ítem de DynamoDB:', error);

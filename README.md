@@ -13,22 +13,30 @@ Este repositorio contiene plantillas de proyectos mínimos funcionales y herrami
 - **.env**: Archivo de configuración para variables de entorno (contiene el token de GitHub).
 - **.env.example**: Plantilla de ejemplo para el archivo .env.
 
-### Templates de Proyectos (Por implementar)
+### Templates de Proyectos
 
-Este repositorio incluirá templates de proyectos mínimos configurados y listos para usar. Por ejemplo:
+Este repositorio incluye los siguientes templates de proyectos, listos para usar:
 
-- **frontend-nextjs/**: Proyecto mínimo de Next.js configurado con:
-  - TypeScript
-  - ESLint y Prettier
-  - TailwindCSS
-  - Estructura de carpetas optimizada
-  - Componentes básicos reutilizables
+- **frontend-nextjs/**: Proyecto moderno de Next.js configurado con:
+  - TypeScript para tipado estático
+  - ESLint y configuración moderna
+  - TailwindCSS para estilos
+  - Componentes reutilizables (Header, ThemeToggle)
+  - React Query para gestión de estado y peticiones
+  - Tema claro/oscuro con next-themes
+  - Estructura de carpetas optimizada (app/, components/)
+  - Responsive design
 
-- **backend-nodets/**: Proyecto mínimo de Node.js con TypeScript:
-  - Estructura de API RESTful
-  - Configuración de TypeScript optimizada
-  - ESLint y Prettier
-  - Sistema de logging y manejo de errores
+- **backend-node/**: Proyecto completo de backend serverless para AWS:
+  - TypeScript para tipado estático
+  - Serverless Framework para despliegue en AWS
+  - API RESTful completa
+  - AWS SDK v3 para interacción con servicios de AWS
+  - Soporte para S3 (almacenamiento de archivos)
+  - Soporte para DynamoDB (base de datos NoSQL)
+  - Soporte para SES (envío de emails)
+  - IAM optimizado con permisos de mínimo privilegio
+  - Scripts para desarrollo local y despliegue
 
 ## Uso del Repositorio
 
@@ -48,13 +56,47 @@ El script verificará que todas las dependencias estén instaladas, creará el r
 
 ### Utilizar un Template de Proyecto
 
-Cuando estén implementados los templates, podrás iniciar un nuevo proyecto copiando la carpeta correspondiente:
+Para iniciar un nuevo proyecto basado en uno de los templates disponibles:
 
 ```bash
-# Próximamente: script para copiar un template y configurarlo automáticamente
-# Por ejemplo:
-# ./iniciar-proyecto.sh frontend-nextjs mi-nuevo-proyecto
+# Copia el template deseado a tu directorio de trabajo
+cp -r frontend-nextjs/ mi-proyecto-frontend
+# o
+cp -r backend-node/ mi-proyecto-backend
+
+# Entra al directorio del proyecto e instala las dependencias
+cd mi-proyecto-frontend
+npm install
 ```
+
+### Frontend Next.js
+
+El template frontend-nextjs proporciona una aplicación Next.js moderna lista para usar:
+
+```bash
+# Iniciar el servidor de desarrollo
+cd frontend-nextjs
+npm install
+npm run dev
+```
+
+La aplicación estará disponible en `http://localhost:3000`.
+
+### Backend Serverless
+
+El template backend-node proporciona una aplicación serverless lista para desplegar en AWS:
+
+```bash
+# Desarrollo local
+cd backend-node
+npm install
+npm run dev
+
+# Despliegue a AWS
+npm run deploy
+```
+
+Consulta el README específico de cada template para obtener instrucciones detalladas.
 
 ### Generar Componentes y Páginas
 
@@ -72,14 +114,23 @@ Estos scripts te guiarán a través de un proceso interactivo para especificar e
 
 ## Requisitos
 
-- Node.js instalado en el sistema
+- Node.js (v14.x o superior)
 - Git instalado en el sistema
-- Token de GitHub con permisos para crear repositorios
-- Archivo .env configurado con el token de GitHub
+- Token de GitHub con permisos para crear repositorios (para create-repo.sh)
+- AWS CLI configurado (para backend-node)
+- Serverless Framework (opcional, para backend-node)
 
 ## Contribuciones
 
 Las contribuciones son bienvenidas. Si deseas mejorar los scripts existentes, añadir nuevos templates de proyectos o añadir nuevas funcionalidades, no dudes en crear un pull request.
+
+## Roadmap
+
+Próximas plantillas a implementar:
+
+- Template de aplicación móvil con React Native
+- Template para microservicios con NestJS
+- Template para aplicaciones con MongoDB y Express
 
 ## Licencia
 
