@@ -1,0 +1,163 @@
+service: backend-serverless
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  environment:
+    NODE_ENV: ${opt:stage, 'dev'}
+    DYNAMODB_TABLE: ${self:service}-${self:provider.stage}
+  
+  # Políticas IAM para los servicios de AWS
+  iam:
+    role:
+      statements:
+        # Permisos para S3
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+            - s3:PutObject
+            - s3:DeleteObject
+            - s3:ListBucket
+          Resource:
+            - "arn:aws:s3:::${self:service}-${self:provider.stage}-bucket/*"
+            - "arn:aws:s3:::${self:service}-${self:provider.stage}-bucket"
+        
+        # Permisos para DynamoDB
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:BatchGetItem
+            - dynamodb:BatchWriteItem
+          Resource:
+            - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+            - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}/index/*"
+        
+        # Permisos para SES (Envío de emails)
+        - Effect: Allow
+          Action:
+            - ses:SendEmail
+            - ses:SendRawEmail
+            - ses:SendTemplatedEmail
+          Resource: "*"
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-offline
+
+package:
+  individually: true
+  exclude:
+    - node_modules/**
+    - src/**
+  include:
+    - dist/**
+
+functions:
+  # API para S3
+  uploadFile:
+    handler: src/handlers/s3-handlers.uploadFile
+    events:
+      - http:
+          path: /upload
+          method: post
+          cors: true
+  
+  getFile:
+    handler: src/handlers/s3-handlers.getFile
+    events:
+      - http:
+          path: /files/{fileId}
+          method: get
+          cors: true
+  
+  # API para DynamoDB
+  createItem:
+    handler: src/handlers/dynamodb-handlers.createItem
+    events:
+      - http:
+          path: /items
+          method: post
+          cors: true
+  
+  getItem:
+    handler: src/handlers/dynamodb-handlers.getItem
+    events:
+      - http:
+          path: /items/{id}
+          method: get
+          cors: true
+  
+  scanItems:
+    handler: src/handlers/dynamodb-handlers.scanItems
+    events:
+      - http:
+          path: /items
+          method: get
+          cors: true
+  
+  updateItem:
+    handler: src/handlers/dynamodb-handlers.updateItem
+    events:
+      - http:
+          path: /items/{id}
+          method: put
+          cors: true
+  
+  deleteItem:
+    handler: src/handlers/dynamodb-handlers.deleteItem
+    events:
+      - http:
+          path: /items/{id}
+          method: delete
+          cors: true
+  
+  # API para envío de emails
+  sendEmail:
+    handler: src/handlers/email-handlers.sendEmail
+    events:
+      - http:
+          path: /email
+          method: post
+          cors: true
+
+resources:
+  Resources:
+    # Tabla de DynamoDB
+    ItemsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+    
+    # Bucket S3
+    S3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:service}-${self:provider.stage}-bucket
+        CorsConfiguration:
+          CorsRules:
+            - AllowedMethods:
+                - GET
+                - PUT
+                - POST
+                - DELETE
+                - HEAD
+              AllowedOrigins:
+                - '*'
+              AllowedHeaders:
+                - '*' 
